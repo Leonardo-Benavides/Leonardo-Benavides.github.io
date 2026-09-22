@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Instalador 9io7adc - ESP32-S3</title>
+  <script 
+    type="module" 
+    src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module">
+  </script>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 85vh;
+      margin: 0;
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+    .card {
+      background: #1e293b;
+      padding: 2.5rem;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+      text-align: center;
+      max-width: 440px;
+      border: 1px solid #334155;
+    }
+    h2 { margin-top: 0; color: #38bdf8; }
+    p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
+    .badge {
+      display: inline-block;
+      background: #0284c7;
+      color: white;
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">ESP32-S3</span>
+    <h2>Flasheo Web: 9io7adc</h2>
+    <p>Conecta tu ESP32-S3 por USB usando Google Chrome o Microsoft Edge y pulsa el botón para grabar el firmware.</p>
+    
+    <esp-web-install-button manifest="manifest.json">
+      <button slot="activate">Conectar y Flashear</button>
+      <span slot="unsupported">Navegador no compatible. Abre esta página en Google Chrome o Microsoft Edge.</span>
+    </esp-web-install-button>
+  </div>
+</body>
+</html>

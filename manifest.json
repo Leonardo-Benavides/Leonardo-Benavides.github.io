@@ -1,0 +1,12 @@
+{
+  "name": "Proyecto 9io7adc (ESP32-S3)",
+  "version": "1.0.0",
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        { "path": "merged-binary.bin", "offset": 0 }
+      ]
+    }
+  ]
+}
