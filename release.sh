@@ -57,18 +57,64 @@ if [[ -f "$CONFIG_FILE" ]]; then
     echo -e "  • Proyecto:     ${GREEN}${PROJECT_NAME:-Desconocido}${NC}"
     echo -e "  • Directorio:   ${CYAN}${FIRMWARE_DIR:-}${NC}"
     echo -e "  • Rama destino: ${YELLOW}${BRANCH_NAME:-}${NC}\n"
-else
-    # Si no existe .web_config, intentar autodetección en ../
+fi
+
+if [[ -z "$FIRMWARE_DIR" || ! -d "$FIRMWARE_DIR" ]]; then
     PARENT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-    # Comprobar si hay un proyecto con nombre similar o 9io7adc
+    CANDIDATOS=()
     for c in "$PARENT_DIR"/*/; do
         [[ -d "$c" ]] || continue
         c_clean="${c%/}"
         if [[ "$c_clean" != "$SCRIPT_DIR" && -f "$c_clean/CMakeLists.txt" ]]; then
-            FIRMWARE_DIR="$c_clean"
-            break
+            CANDIDATOS+=("$c_clean")
         fi
     done
+
+    if [[ ${#CANDIDATOS[@]} -eq 1 ]]; then
+        FIRMWARE_DIR="${CANDIDATOS[0]}"
+        echo -e "Proyecto detectado automáticamente: ${GREEN}${FIRMWARE_DIR}${NC}\n"
+    elif [[ ${#CANDIDATOS[@]} -gt 1 ]]; then
+        echo -e "${BOLD}Selecciona el proyecto de firmware a vincular:${NC}"
+        for i in "${!CANDIDATOS[@]}"; do
+            echo -e "  $((i + 1))) ${CYAN}$(basename "${CANDIDATOS[$i]}")${NC} (${CANDIDATOS[$i]})"
+        done
+        echo -e "  $(( ${#CANDIDATOS[@]} + 1 ))) Introducir ruta manualmente..."
+        while true; do
+            read -r -p "$(echo -e "${BOLD}Elige una opción [1-$(( ${#CANDIDATOS[@]} + 1 ))]: ${NC}")" sel_idx
+            if [[ "$sel_idx" =~ ^[0-9]+$ ]] && (( sel_idx >= 1 && sel_idx <= ${#CANDIDATOS[@]} )); then
+                FIRMWARE_DIR="${CANDIDATOS[$((sel_idx - 1))]}"
+                break
+            elif [[ "$sel_idx" -eq $(( ${#CANDIDATOS[@]} + 1 )) ]]; then
+                read -r -p "$(echo -e "${BOLD}Introduce la ruta al proyecto: ${NC}")" manual_path
+                manual_path="$(cd "$manual_path" 2>/dev/null && pwd || echo "$manual_path")"
+                if [[ -d "$manual_path" ]]; then
+                    FIRMWARE_DIR="$manual_path"
+                    break
+                else
+                    echo -e "${RED}El directorio '$manual_path' no existe.${NC}"
+                fi
+            else
+                echo -e "${RED}Opción inválida.${NC}"
+            fi
+        done
+    else
+        read -r -p "$(echo -e "${BOLD}Introduce la ruta al proyecto de firmware: ${NC}")" manual_path
+        manual_path="$(cd "$manual_path" 2>/dev/null && pwd || echo "$manual_path")"
+        if [[ -d "$manual_path" ]]; then
+            FIRMWARE_DIR="$manual_path"
+        fi
+    fi
+
+    # Guardar en .web_config para futuras ejecuciones
+    if [[ -n "$FIRMWARE_DIR" && -d "$FIRMWARE_DIR" && ! -f "$CONFIG_FILE" ]]; then
+        cat > "$CONFIG_FILE" <<EOF
+# Archivo local de configuración generado automáticamente
+PROJECT_NAME="$(basename "$FIRMWARE_DIR")"
+FIRMWARE_DIR="$FIRMWARE_DIR"
+BRANCH_NAME="$(git branch --show-current || echo "master")"
+EOF
+        echo -e "${GREEN}✔ Configuración guardada en .web_config${NC}\n"
+    fi
 fi
 
 # ------------------------------------------------------------------------------
@@ -238,27 +284,83 @@ definir_mensaje_commit
 echo ""
 
 # ------------------------------------------------------------------------------
-# 6. Detección y copia de binarios compilados
+# 6. Detección, generación y copia de binarios compilados
 # ------------------------------------------------------------------------------
 gestionar_binarios() {
-    if [[ -n "$FIRMWARE_DIR" && -d "$FIRMWARE_DIR/build" ]]; then
-        local build_dir="$FIRMWARE_DIR/build"
-        local bin_s3="$build_dir/merged-binary.bin"
-        if [[ -f "$bin_s3" ]]; then
-            echo -e "${CYAN}Se detectó binario ESP32-S3 compilado en:${NC} $bin_s3"
-            if confirmar_1_0 "¿Deseas copiar a ./merged-binary-esp32s3.bin?"; then
-                cp -v "$bin_s3" "$SCRIPT_DIR/merged-binary-esp32s3.bin"
-                echo -e "${GREEN}✔ Binario ESP32-S3 actualizado.${NC}\n"
+    if [[ -z "$FIRMWARE_DIR" || ! -d "$FIRMWARE_DIR" ]]; then
+        echo -e "${YELLOW}⚠️  No se ha especificado un directorio de firmware válido. Se omite la copia de binarios.${NC}\n"
+        return 0
+    fi
+
+    local build_dir="$FIRMWARE_DIR/build"
+    local bin_source=""
+    local chip="esp32s3"
+
+    # Detectar chip desde flasher_args.json si está disponible
+    if [[ -f "$build_dir/flasher_args.json" ]]; then
+        local detected_chip
+        detected_chip=$(grep -oP '"chip"\s*:\s*"\K[^"]+' "$build_dir/flasher_args.json" 2>/dev/null || echo "")
+        [[ -n "$detected_chip" ]] && chip="$detected_chip"
+    fi
+
+    # 1. Comprobar si merged-binary.bin ya existe en el build
+    if [[ -f "$build_dir/merged-binary.bin" ]]; then
+        bin_source="$build_dir/merged-binary.bin"
+    elif [[ -f "$build_dir/merged-binary-esp32.bin" ]]; then
+        bin_source="$build_dir/merged-binary-esp32.bin"
+        chip="esp32"
+    elif [[ -f "$build_dir/merged-binary-esp32s3.bin" ]]; then
+        bin_source="$build_dir/merged-binary-esp32s3.bin"
+        chip="esp32s3"
+    fi
+
+    # 2. Si no existe, verificar si el proyecto está compilado y ofrecer generarlo con idf.py merge-bin
+    if [[ -z "$bin_source" ]]; then
+        if [[ -f "$build_dir/flasher_args.json" || -d "$build_dir/bootloader" ]]; then
+            echo -e "${YELLOW}⚠️  Se detectó compilación en $build_dir pero falta el archivo 'merged-binary.bin' unificado.${NC}"
+            if confirmar_1_0 "¿Deseas generarlo automáticamente ahora ejecutando 'idf.py merge-bin'?"; then
+                echo -e "${CYAN}Ejecutando 'idf.py merge-bin' en $FIRMWARE_DIR...${NC}"
+                (cd "$FIRMWARE_DIR" && idf.py merge-bin) || true
+                if [[ -f "$build_dir/merged-binary.bin" ]]; then
+                    bin_source="$build_dir/merged-binary.bin"
+                    echo -e "${GREEN}✔ merged-binary.bin generado con éxito.${NC}\n"
+                else
+                    echo -e "${RED}No se pudo generar merged-binary.bin automáticamente.${NC}\n"
+                fi
             fi
         fi
-        local bin_esp32="$build_dir/merged-binary-esp32.bin"
-        if [[ -f "$bin_esp32" ]]; then
-            echo -e "${CYAN}Se detectó binario ESP32 en:${NC} $bin_esp32"
-            if confirmar_1_0 "¿Deseas copiar a ./merged-binary-esp32.bin?"; then
-                cp -v "$bin_esp32" "$SCRIPT_DIR/merged-binary-esp32.bin"
-                echo -e "${GREEN}✔ Binario ESP32 actualizado.${NC}\n"
+    fi
+
+    # 3. Si aún no se encuentra, permitir indicar la ruta manual o avisar
+    if [[ -z "$bin_source" ]]; then
+        echo -e "${YELLOW}⚠️  No se encontró ningún binario en:${NC} $build_dir"
+        if confirmar_1_0 "¿Deseas introducir manualmente la ruta a un archivo .bin compilado?"; then
+            read -r -p "$(echo -e "${BOLD}Ruta completa al archivo .bin: ${NC}")" manual_bin
+            if [[ -f "$manual_bin" ]]; then
+                bin_source="$manual_bin"
+            else
+                echo -e "${RED}El archivo '$manual_bin' no existe.${NC}"
             fi
         fi
+    fi
+
+    # 4. Proceder a copiar si se tiene el binario origen
+    if [[ -n "$bin_source" && -f "$bin_source" ]]; then
+        echo -e "\n${CYAN}Binario compilado detectado (${chip}):${NC} $bin_source"
+        local target_chip_bin="$SCRIPT_DIR/merged-binary-${chip}.bin"
+        local legacy_bin="$SCRIPT_DIR/merged-binary.bin"
+
+        if confirmar_1_0 "¿Deseas copiar este binario a ./merged-binary.bin y ./$(basename "$target_chip_bin")?"; then
+            cp -v "$bin_source" "$legacy_bin"
+            cp -v "$bin_source" "$target_chip_bin"
+            echo -e "${GREEN}✔ Binarios actualizados exitosamente.${NC}\n"
+            ls -lh "$legacy_bin" "$target_chip_bin"
+            echo ""
+        else
+            echo -e "${YELLOW}Se conservarán los binarios existentes.${NC}\n"
+        fi
+    else
+        echo -e "${YELLOW}⚠️  Se omitió la actualización de binarios (no se encontraron archivos nuevos).${NC}\n"
     fi
 }
 
@@ -297,6 +399,7 @@ echo ""
 if ! confirmar_1_0 "¿Deseas aplicar estos cambios, hacer git add, commit y crear el tag?"; then
     echo -e "${YELLOW}Operación cancelada. Revirtiendo modificaciones...${NC}"
     git checkout "$MANIFEST_FILE" "$HTML_FILE" "$MANIFEST_S3" "$MANIFEST_ESP32" 2>/dev/null || true
+    git checkout "$SCRIPT_DIR"/merged-binary*.bin 2>/dev/null || true
     echo -e "${RED}Cambios descartados. El repositorio no fue alterado.${NC}"
     exit 0
 fi
@@ -310,6 +413,7 @@ if git status --porcelain | grep -qE "merged-binary.*\.bin"; then
 fi
 git add "$SCRIPT_DIR/release.sh"
 [[ -f "$SCRIPT_DIR/init_web.sh" ]] && git add "$SCRIPT_DIR/init_web.sh"
+[[ -e "$SCRIPT_DIR/script.sh" || -L "$SCRIPT_DIR/script.sh" ]] && git add "$SCRIPT_DIR/script.sh"
 
 # Git Commit
 git commit -m "$COMMIT_MSG"
