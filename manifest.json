@@ -1,6 +1,6 @@
 {
-  "name": "Firmware ESP32-S3",
-  "version": "0.1",
+  "name": "9io7adc_uart (ESP32-S3)",
+  "version": "0.7",
   "builds": [
     {
       "chipFamily": "ESP32-S3",
