@@ -35,7 +35,7 @@ confirmar_1_0() {
 }
 
 echo -e "\n${CYAN}${BOLD}╔═══════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${CYAN}${BOLD}║      INICIALIZADOR DE WEB FLASHER (ESP32 / ESP32-S3)         ║${NC}"
+echo -e "${CYAN}${BOLD}║           INICIALIZADOR DE WEB FLASHER (ESP32-S3)            ║${NC}"
 echo -e "${CYAN}${BOLD}╚═══════════════════════════════════════════════════════════════╝${NC}\n"
 
 # ------------------------------------------------------------------------------
@@ -149,20 +149,8 @@ sed -i -E "s/(<h2 id=\"project-heading\">)[^<]+(<\/h2>)/\1Flasheo Web: $PROJECT_
 sed -i -E "s/(<span class=\"badge\" id=\"version-badge\">.*• v)[^<]+(<\/span>)/\1$INITIAL_VERSION\2/" "$SCRIPT_DIR/index.html"
 
 # manifest.json
-sed -i -E "s/(\"name\":[[:space:]]*\")[^\"]+(\")/\1$PROJECT_TITLE (Auto)\2/" "$SCRIPT_DIR/manifest.json"
+sed -i -E "s/(\"name\":[[:space:]]*\")[^\"]+(\")/\1$PROJECT_TITLE (ESP32-S3)\2/" "$SCRIPT_DIR/manifest.json"
 sed -i -E "s/(\"version\":[[:space:]]*\")[^\"]+(\")/\1$INITIAL_VERSION\2/" "$SCRIPT_DIR/manifest.json"
-
-# manifest-esp32s3.json
-if [[ -f "$SCRIPT_DIR/manifest-esp32s3.json" ]]; then
-    sed -i -E "s/(\"name\":[[:space:]]*\")[^\"]+(\")/\1$PROJECT_TITLE (ESP32-S3)\2/" "$SCRIPT_DIR/manifest-esp32s3.json"
-    sed -i -E "s/(\"version\":[[:space:]]*\")[^\"]+(\")/\1$INITIAL_VERSION\2/" "$SCRIPT_DIR/manifest-esp32s3.json"
-fi
-
-# manifest-esp32.json
-if [[ -f "$SCRIPT_DIR/manifest-esp32.json" ]]; then
-    sed -i -E "s/(\"name\":[[:space:]]*\")[^\"]+(\")/\1$PROJECT_TITLE (ESP32)\2/" "$SCRIPT_DIR/manifest-esp32.json"
-    sed -i -E "s/(\"version\":[[:space:]]*\")[^\"]+(\")/\1$INITIAL_VERSION\2/" "$SCRIPT_DIR/manifest-esp32.json"
-fi
 
 # ------------------------------------------------------------------------------
 # 4. Guardar archivo local de configuración
@@ -183,18 +171,18 @@ echo -e "${GREEN}✔ Archivo .web_config generado.${NC}"
 # ------------------------------------------------------------------------------
 BUILD_DIR="$FIRMWARE_DIR/build"
 if [[ -d "$BUILD_DIR" ]]; then
-    if [[ -f "$BUILD_DIR/merged-binary.bin" ]]; then
-        echo -e "${CYAN}Detectado binario ESP32-S3 compilado en:${NC} $BUILD_DIR/merged-binary.bin"
-        if confirmar_1_0 "¿Deseas copiar a ./merged-binary-esp32s3.bin ahora?"; then
-            cp -v "$BUILD_DIR/merged-binary.bin" "$SCRIPT_DIR/merged-binary-esp32s3.bin"
-            echo -e "${GREEN}✔ Binario ESP32-S3 copiado.${NC}"
-        fi
+    bin_found=""
+    if [[ -f "$BUILD_DIR/merged-binary-esp32s3.bin" ]]; then
+        bin_found="$BUILD_DIR/merged-binary-esp32s3.bin"
+    elif [[ -f "$BUILD_DIR/merged-binary.bin" ]]; then
+        bin_found="$BUILD_DIR/merged-binary.bin"
     fi
-    if [[ -f "$BUILD_DIR/merged-binary-esp32.bin" ]]; then
-        echo -e "${CYAN}Detectado binario ESP32 compilado en:${NC} $BUILD_DIR/merged-binary-esp32.bin"
-        if confirmar_1_0 "¿Deseas copiar a ./merged-binary-esp32.bin ahora?"; then
-            cp -v "$BUILD_DIR/merged-binary-esp32.bin" "$SCRIPT_DIR/merged-binary-esp32.bin"
-            echo -e "${GREEN}✔ Binario ESP32 copiado.${NC}"
+
+    if [[ -n "$bin_found" ]]; then
+        echo -e "${CYAN}Detectado binario ESP32-S3 compilado en:${NC} $bin_found"
+        if confirmar_1_0 "¿Deseas copiar a ./merged-binary-esp32s3.bin ahora?"; then
+            cp -v "$bin_found" "$SCRIPT_DIR/merged-binary-esp32s3.bin"
+            echo -e "${GREEN}✔ Binario ESP32-S3 copiado.${NC}"
         fi
     fi
 fi

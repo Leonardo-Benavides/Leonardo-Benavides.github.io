@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title id="page-title">Instalador Web - Firmware ESP32</title>
+  <title id="page-title">Instalador Web - Firmware ESP32-S3</title>
   <script 
     type="module" 
     src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module">
@@ -26,7 +26,7 @@
     }
     .card {
       background: #1e293b;
-      padding: 2.2rem;
+      padding: 2.5rem 2rem;
       border-radius: 16px;
       box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.45);
       text-align: center;
@@ -39,7 +39,7 @@
       background: #0284c7;
       color: #ffffff;
       font-size: 0.75rem;
-      padding: 4px 10px;
+      padding: 4px 12px;
       border-radius: 9999px;
       margin-bottom: 14px;
       text-transform: uppercase;
@@ -58,73 +58,18 @@
       margin-top: 0;
       margin-bottom: 1.5rem;
     }
-    .selector-box {
-      background: #0f172a;
-      padding: 1rem;
-      border-radius: 12px;
-      border: 1px solid #334155;
-      margin-bottom: 1.5rem;
-      text-align: left;
-    }
-    .selector-title {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      color: #cbd5e1;
-      margin-bottom: 0.6rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .selector-title span.mode-tag {
-      font-size: 0.7rem;
-      background: #0369a1;
-      color: #e0f2fe;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 500;
-    }
-    .segmented-control {
-      display: flex;
-      background: #1e293b;
-      padding: 4px;
-      border-radius: 10px;
-      gap: 4px;
-      border: 1px solid #475569;
-    }
-    .chip-btn {
-      flex: 1;
-      background: transparent;
-      border: none;
-      color: #94a3b8;
-      font-size: 0.85rem;
-      font-weight: 600;
-      padding: 8px 10px;
-      border-radius: 7px;
-      cursor: pointer;
-      transition: all 0.2s ease-in-out;
-      text-align: center;
-    }
-    .chip-btn:hover {
-      color: #f1f5f9;
-      background: rgba(255, 255, 255, 0.05);
-    }
-    .chip-btn.active {
-      background: #0284c7;
-      color: #ffffff;
-      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
-    }
     .description-box {
-      font-size: 0.9rem;
+      font-size: 0.92rem;
       color: #94a3b8;
-      line-height: 1.5;
-      min-height: 48px;
-      margin-bottom: 1.5rem;
-      padding: 0 0.5rem;
+      line-height: 1.6;
+      margin-bottom: 1.8rem;
+      padding: 0.8rem 1rem;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
     }
     .description-box strong {
-      color: #e2e8f0;
+      color: #38bdf8;
     }
     esp-web-install-button {
       display: inline-block;
@@ -134,7 +79,7 @@
       background: #0284c7;
       color: white;
       border: none;
-      padding: 0.75rem 1.6rem;
+      padding: 0.8rem 1.8rem;
       font-size: 1rem;
       font-weight: 600;
       border-radius: 8px;
@@ -156,7 +101,7 @@
       margin-top: 0.8rem;
     }
     .footer-note {
-      margin-top: 1.5rem;
+      margin-top: 1.8rem;
       font-size: 0.75rem;
       color: #64748b;
     }
@@ -164,37 +109,17 @@
 </head>
 <body>
   <div class="card">
-    <span class="badge" id="version-badge">ESP32 / S3 • v0.1</span>
-    <h2 id="project-heading">Flasheo Web: Firmware ESP32</h2>
-    <p class="subtitle" id="project-subtitle">Herramienta oficial de instalación web por Web Serial</p>
+    <span class="badge" id="version-badge">ESP32-S3 • v0.1</span>
+    <h2 id="project-heading">Flasheo Web: Firmware ESP32-S3</h2>
+    <p class="subtitle" id="project-subtitle">Instalación oficial vía Web Serial para ESP32-S3</p>
 
-    <!-- Selector de microcontrolador -->
-    <div class="selector-box">
-      <div class="selector-title">
-        <span>Microcontrolador</span>
-        <span class="mode-tag" id="current-mode-tag">Automático</span>
-      </div>
-      <div class="segmented-control" role="group" aria-label="Selección de chip">
-        <button type="button" class="chip-btn active" data-mode="auto" data-manifest="manifest.json">
-          ✨ Auto
-        </button>
-        <button type="button" class="chip-btn" data-mode="esp32s3" data-manifest="manifest-esp32s3.json">
-          ESP32-S3
-        </button>
-        <button type="button" class="chip-btn" data-mode="esp32" data-manifest="manifest-esp32.json">
-          ESP32
-        </button>
-      </div>
-    </div>
-
-    <!-- Descripción reactiva según el modo -->
     <div class="description-box" id="desc-box">
-      <strong>Detección automática:</strong> Conecta tu placa por USB en Chrome o Edge. El instalador identificará si es <strong>ESP32</strong> o <strong>ESP32-S3</strong> y grabará el firmware correspondiente.
+      Conecta tu placa <strong>ESP32-S3</strong> por puerto USB en Chrome o Edge y presiona el botón para flashear el firmware oficial.
     </div>
     
     <!-- Botón de ESP Web Tools -->
     <esp-web-install-button id="installer-btn" manifest="manifest.json">
-      <button slot="activate" class="install-action-btn">Conectar y Flashear</button>
+      <button slot="activate" class="install-action-btn">Conectar y Flashear ESP32-S3</button>
       <span slot="unsupported" class="unsupported-msg">⚠️ Navegador no compatible. Abre esta página en Google Chrome o Microsoft Edge.</span>
     </esp-web-install-button>
 
@@ -202,39 +127,5 @@
       Compatible con navegadores basados en Chromium mediante Web Serial API
     </div>
   </div>
-
-  <script>
-    const buttons = document.querySelectorAll('.chip-btn');
-    const installerBtn = document.getElementById('installer-btn');
-    const descBox = document.getElementById('desc-box');
-    const modeTag = document.getElementById('current-mode-tag');
-
-    const descriptions = {
-      auto: '<strong>Detección automática:</strong> Conecta tu placa por USB en Chrome o Edge. El instalador identificará si es <strong>ESP32</strong> o <strong>ESP32-S3</strong> y grabará el firmware correspondiente.',
-      esp32s3: '<strong>Modo manual (ESP32-S3):</strong> Se forzará la instalación del firmware compilado para la arquitectura <strong>ESP32-S3</strong> (Xtensa LX7).',
-      esp32: '<strong>Modo manual (ESP32):</strong> Se forzará la instalación del firmware compilado para la arquitectura <strong>ESP32 Estándar</strong> (Xtensa LX6).'
-    };
-
-    const modeLabels = {
-      auto: 'Automático',
-      esp32s3: 'Manual: S3',
-      esp32: 'Manual: ESP32'
-    };
-
-    buttons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        buttons.forEach((b) => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        const mode = btn.getAttribute('data-mode');
-        const manifestUrl = btn.getAttribute('data-manifest');
-
-        installerBtn.setAttribute('manifest', manifestUrl);
-
-        descBox.innerHTML = descriptions[mode] || descriptions.auto;
-        modeTag.textContent = modeLabels[mode] || 'Automático';
-      });
-    });
-  </script>
 </body>
 </html>

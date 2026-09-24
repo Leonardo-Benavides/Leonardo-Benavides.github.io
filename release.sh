@@ -18,8 +18,6 @@ cd "$SCRIPT_DIR"
 
 CONFIG_FILE="$SCRIPT_DIR/.web_config"
 MANIFEST_FILE="$SCRIPT_DIR/manifest.json"
-MANIFEST_S3="$SCRIPT_DIR/manifest-esp32s3.json"
-MANIFEST_ESP32="$SCRIPT_DIR/manifest-esp32.json"
 HTML_FILE="$SCRIPT_DIR/index.html"
 
 trap 'echo -e "\n${RED}Operación cancelada por el usuario.${NC}"; exit 130' INT
@@ -256,7 +254,7 @@ definir_mensaje_commit() {
         fi
 
         local scope=""
-        if confirmar_1_0 "¿Deseas agregar un alcance/scope? (ej. web, ui, esp32)"; then
+        if confirmar_1_0 "¿Deseas agregar un alcance/scope? (ej. web, ui, esp32s3)"; then
             read -r -p "$(echo -e "${BOLD}Nombre del alcance/scope: ${NC}")" scope
             scope="$(echo "$scope" | xargs)"
         fi
@@ -303,15 +301,11 @@ gestionar_binarios() {
         [[ -n "$detected_chip" ]] && chip="$detected_chip"
     fi
 
-    # 1. Comprobar si merged-binary.bin ya existe en el build
-    if [[ -f "$build_dir/merged-binary.bin" ]]; then
-        bin_source="$build_dir/merged-binary.bin"
-    elif [[ -f "$build_dir/merged-binary-esp32.bin" ]]; then
-        bin_source="$build_dir/merged-binary-esp32.bin"
-        chip="esp32"
-    elif [[ -f "$build_dir/merged-binary-esp32s3.bin" ]]; then
+    # 1. Comprobar si merged-binary-esp32s3.bin o merged-binary.bin ya existe en el build
+    if [[ -f "$build_dir/merged-binary-esp32s3.bin" ]]; then
         bin_source="$build_dir/merged-binary-esp32s3.bin"
-        chip="esp32s3"
+    elif [[ -f "$build_dir/merged-binary.bin" ]]; then
+        bin_source="$build_dir/merged-binary.bin"
     fi
 
     # 2. Si no existe, verificar si el proyecto está compilado y ofrecer generarlo con idf.py merge-bin
@@ -347,17 +341,15 @@ gestionar_binarios() {
     # 4. Proceder a copiar si se tiene el binario origen
     if [[ -n "$bin_source" && -f "$bin_source" ]]; then
         echo -e "\n${CYAN}Binario compilado detectado (${chip}):${NC} $bin_source"
-        local target_chip_bin="$SCRIPT_DIR/merged-binary-${chip}.bin"
-        local legacy_bin="$SCRIPT_DIR/merged-binary.bin"
+        local target_chip_bin="$SCRIPT_DIR/merged-binary-esp32s3.bin"
 
-        if confirmar_1_0 "¿Deseas copiar este binario a ./merged-binary.bin y ./$(basename "$target_chip_bin")?"; then
-            cp -v "$bin_source" "$legacy_bin"
+        if confirmar_1_0 "¿Deseas copiar este binario a ./merged-binary-esp32s3.bin?"; then
             cp -v "$bin_source" "$target_chip_bin"
-            echo -e "${GREEN}✔ Binarios actualizados exitosamente.${NC}\n"
-            ls -lh "$legacy_bin" "$target_chip_bin"
+            echo -e "${GREEN}✔ Binario ESP32-S3 actualizado exitosamente.${NC}\n"
+            ls -lh "$target_chip_bin"
             echo ""
         else
-            echo -e "${YELLOW}Se conservarán los binarios existentes.${NC}\n"
+            echo -e "${YELLOW}Se conservará el binario existente.${NC}\n"
         fi
     else
         echo -e "${YELLOW}⚠️  Se omitió la actualización de binarios (no se encontraron archivos nuevos).${NC}\n"
@@ -371,12 +363,8 @@ gestionar_binarios
 # ------------------------------------------------------------------------------
 echo -e "${CYAN}${BOLD}Actualizando archivos a la versión $NEW_VERSION...${NC}"
 
-# Actualizar manifests
-for mf in "$MANIFEST_FILE" "$MANIFEST_S3" "$MANIFEST_ESP32"; do
-    if [[ -f "$mf" ]]; then
-        sed -i -E "s/(\"version\":[[:space:]]*\")[^\"]+(\")/\1$NEW_VERSION\2/" "$mf"
-    fi
-done
+# Actualizar manifest
+sed -i -E "s/(\"version\":[[:space:]]*\")[^\"]+(\")/\1$NEW_VERSION\2/" "$MANIFEST_FILE"
 
 # Actualizar index.html (badge)
 sed -i -E "s/(<span class=\"badge\" id=\"version-badge\">.*• v)[^<]+(<\/span>)/\1$NEW_VERSION\2/" "$HTML_FILE"
@@ -398,19 +386,14 @@ echo ""
 
 if ! confirmar_1_0 "¿Deseas aplicar estos cambios, hacer git add, commit y crear el tag?"; then
     echo -e "${YELLOW}Operación cancelada. Revirtiendo modificaciones...${NC}"
-    git checkout "$MANIFEST_FILE" "$HTML_FILE" "$MANIFEST_S3" "$MANIFEST_ESP32" 2>/dev/null || true
-    git checkout "$SCRIPT_DIR"/merged-binary*.bin 2>/dev/null || true
+    git checkout "$MANIFEST_FILE" "$HTML_FILE" "$SCRIPT_DIR/merged-binary-esp32s3.bin" 2>/dev/null || true
     echo -e "${RED}Cambios descartados. El repositorio no fue alterado.${NC}"
     exit 0
 fi
 
 # Git Add
 git add "$MANIFEST_FILE" "$HTML_FILE"
-[[ -f "$MANIFEST_S3" ]] && git add "$MANIFEST_S3"
-[[ -f "$MANIFEST_ESP32" ]] && git add "$MANIFEST_ESP32"
-if git status --porcelain | grep -qE "merged-binary.*\.bin"; then
-    git add "$SCRIPT_DIR"/merged-binary*.bin
-fi
+[[ -f "$SCRIPT_DIR/merged-binary-esp32s3.bin" ]] && git add "$SCRIPT_DIR/merged-binary-esp32s3.bin"
 git add "$SCRIPT_DIR/release.sh"
 [[ -f "$SCRIPT_DIR/init_web.sh" ]] && git add "$SCRIPT_DIR/init_web.sh"
 [[ -e "$SCRIPT_DIR/script.sh" || -L "$SCRIPT_DIR/script.sh" ]] && git add "$SCRIPT_DIR/script.sh"
