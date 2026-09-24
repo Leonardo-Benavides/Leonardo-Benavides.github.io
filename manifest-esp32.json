@@ -1,6 +1,6 @@
 {
   "name": "9io7adc_uart (ESP32)",
-  "version": "0.1",
+  "version": "0.2",
   "builds": [
     {
       "chipFamily": "ESP32",
