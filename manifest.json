@@ -1,6 +1,6 @@
 {
   "name": "Proyecto 9io7adc (ESP32-S3)",
-  "version": "1.0.0",
+  "version": "1.5",
   "builds": [
     {
       "chipFamily": "ESP32-S3",
