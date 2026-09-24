@@ -1,0 +1,9 @@
+# Archivos locales de configuración
+.web_config
+
+# Archivos de sistema y editores
+.DS_Store
+*.swp
+*~
+.idea/
+.vscode/
