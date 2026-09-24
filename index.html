@@ -3,58 +3,241 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Instalador 9io7adc - ESP32-S3</title>
+  <title>Instalador 9io7adc - ESP32 & ESP32-S3</title>
   <script 
     type="module" 
     src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module">
   </script>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 85vh;
+      min-height: 90vh;
       margin: 0;
       background-color: #0f172a;
       color: #f8fafc;
+      padding: 1.5rem;
     }
     .card {
       background: #1e293b;
-      padding: 2.5rem;
-      border-radius: 14px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+      padding: 2.2rem;
+      border-radius: 16px;
+      box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.45);
       text-align: center;
-      max-width: 440px;
+      max-width: 480px;
+      width: 100%;
       border: 1px solid #334155;
     }
-    h2 { margin-top: 0; color: #38bdf8; }
-    p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
     .badge {
       display: inline-block;
       background: #0284c7;
-      color: white;
+      color: #ffffff;
       font-size: 0.75rem;
-      padding: 3px 8px;
-      border-radius: 6px;
-      margin-bottom: 12px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      margin-bottom: 14px;
       text-transform: uppercase;
-      font-weight: bold;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+    }
+    h2 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      color: #38bdf8;
+      font-size: 1.6rem;
+    }
+    .subtitle {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+    }
+    .selector-box {
+      background: #0f172a;
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px solid #334155;
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+    .selector-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      font-weight: 600;
       letter-spacing: 0.5px;
+      color: #cbd5e1;
+      margin-bottom: 0.6rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .selector-title span.mode-tag {
+      font-size: 0.7rem;
+      background: #0369a1;
+      color: #e0f2fe;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .segmented-control {
+      display: flex;
+      background: #1e293b;
+      padding: 4px;
+      border-radius: 10px;
+      gap: 4px;
+      border: 1px solid #475569;
+    }
+    .chip-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 8px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      text-align: center;
+    }
+    .chip-btn:hover {
+      color: #f1f5f9;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .chip-btn.active {
+      background: #0284c7;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+    }
+    .description-box {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      line-height: 1.5;
+      min-height: 48px;
+      margin-bottom: 1.5rem;
+      padding: 0 0.5rem;
+    }
+    .description-box strong {
+      color: #e2e8f0;
+    }
+    esp-web-install-button {
+      display: inline-block;
+      margin-top: 0.5rem;
+    }
+    .install-action-btn {
+      background: #0284c7;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.6rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+      transition: background 0.2s, transform 0.1s;
+    }
+    .install-action-btn:hover {
+      background: #0369a1;
+      transform: translateY(-1px);
+    }
+    .install-action-btn:active {
+      transform: translateY(1px);
+    }
+    .unsupported-msg {
+      display: block;
+      color: #f87171;
+      font-size: 0.85rem;
+      margin-top: 0.8rem;
+    }
+    .footer-note {
+      margin-top: 1.5rem;
+      font-size: 0.75rem;
+      color: #64748b;
     }
   </style>
 </head>
 <body>
   <div class="card">
-    <span class="badge">ESP32-S3 • v1.6</span>
+    <span class="badge" id="version-badge">ESP32 / S3 • v1.7</span>
     <h2>Flasheo Web: 9io7adc</h2>
-    <p>Conecta tu ESP32-S3 por USB usando Google Chrome o Microsoft Edge y pulsa el botón para grabar el firmware.</p>
+    <p class="subtitle">Herramienta oficial de instalación web por Web Serial</p>
+
+    <!-- Selector de microcontrolador -->
+    <div class="selector-box">
+      <div class="selector-title">
+        <span>Microcontrolador</span>
+        <span class="mode-tag" id="current-mode-tag">Automático</span>
+      </div>
+      <div class="segmented-control" role="group" aria-label="Selección de chip">
+        <button type="button" class="chip-btn active" data-mode="auto" data-manifest="manifest.json">
+          ✨ Auto
+        </button>
+        <button type="button" class="chip-btn" data-mode="esp32s3" data-manifest="manifest-esp32s3.json">
+          ESP32-S3
+        </button>
+        <button type="button" class="chip-btn" data-mode="esp32" data-manifest="manifest-esp32.json">
+          ESP32
+        </button>
+      </div>
+    </div>
+
+    <!-- Descripción reactiva según el modo -->
+    <div class="description-box" id="desc-box">
+      <strong>Detección automática:</strong> Conecta tu placa por USB en Chrome o Edge. El instalador identificará si es <strong>ESP32</strong> o <strong>ESP32-S3</strong> y grabará el firmware correspondiente.
+    </div>
     
-    <esp-web-install-button manifest="manifest.json">
-      <button slot="activate">Conectar y Flashear</button>
-      <span slot="unsupported">Navegador no compatible. Abre esta página en Google Chrome o Microsoft Edge.</span>
+    <!-- Botón de ESP Web Tools -->
+    <esp-web-install-button id="installer-btn" manifest="manifest.json">
+      <button slot="activate" class="install-action-btn">Conectar y Flashear</button>
+      <span slot="unsupported" class="unsupported-msg">⚠️ Navegador no compatible. Abre esta página en Google Chrome o Microsoft Edge.</span>
     </esp-web-install-button>
+
+    <div class="footer-note">
+      Compatible con navegadores basados en Chromium mediante Web Serial API
+    </div>
   </div>
+
+  <script>
+    const buttons = document.querySelectorAll('.chip-btn');
+    const installerBtn = document.getElementById('installer-btn');
+    const descBox = document.getElementById('desc-box');
+    const modeTag = document.getElementById('current-mode-tag');
+
+    const descriptions = {
+      auto: '<strong>Detección automática:</strong> Conecta tu placa por USB en Chrome o Edge. El instalador identificará si es <strong>ESP32</strong> o <strong>ESP32-S3</strong> y grabará el firmware correspondiente.',
+      esp32s3: '<strong>Modo manual (ESP32-S3):</strong> Se forzará la instalación del firmware compilado para la arquitectura <strong>ESP32-S3</strong> (Xtensa LX7).',
+      esp32: '<strong>Modo manual (ESP32):</strong> Se forzará la instalación del firmware compilado para la arquitectura <strong>ESP32 Estándar</strong> (Xtensa LX6).'
+    };
+
+    const modeLabels = {
+      auto: 'Automático',
+      esp32s3: 'Manual: S3',
+      esp32: 'Manual: ESP32'
+    };
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        // Remover clase activa de todos y asignar al clickeado
+        buttons.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const mode = btn.getAttribute('data-mode');
+        const manifestUrl = btn.getAttribute('data-manifest');
+
+        // Actualizar manifest del instalador
+        installerBtn.setAttribute('manifest', manifestUrl);
+
+        // Actualizar textos e indicadores
+        descBox.innerHTML = descriptions[mode] || descriptions.auto;
+        modeTag.textContent = modeLabels[mode] || 'Automático';
+      });
+    });
+  </script>
 </body>
 </html>

@@ -18,6 +18,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 MANIFEST_FILE="$SCRIPT_DIR/manifest.json"
+MANIFEST_S3="$SCRIPT_DIR/manifest-esp32s3.json"
+MANIFEST_ESP32="$SCRIPT_DIR/manifest-esp32.json"
 HTML_FILE="$SCRIPT_DIR/index.html"
 BINARY_LOCAL="$SCRIPT_DIR/merged-binary.bin"
 BINARY_SOURCE="$SCRIPT_DIR/../9io7adc/build/merged-binary.bin"
@@ -216,11 +218,12 @@ echo ""
 gestionar_binario() {
     if [[ -f "$BINARY_SOURCE" ]]; then
         echo -e "${CYAN}Se detectó un binario compilado en:${NC} $BINARY_SOURCE"
-        if confirmar_1_0 "¿Deseas copiar el nuevo binario a ./merged-binary.bin?"; then
+        if confirmar_1_0 "¿Deseas copiar el nuevo binario a ./merged-binary.bin y ./merged-binary-esp32s3.bin?"; then
             cp -v "$BINARY_SOURCE" "$BINARY_LOCAL"
-            echo -e "${GREEN}Binario actualizado exitosamente.${NC}\n"
+            cp -v "$BINARY_SOURCE" "$SCRIPT_DIR/merged-binary-esp32s3.bin"
+            echo -e "${GREEN}Binarios actualizados exitosamente.${NC}\n"
         else
-            echo -e "${YELLOW}Se conservará el binario existente.${NC}\n"
+            echo -e "${YELLOW}Se conservarán los binarios existentes.${NC}\n"
         fi
     fi
 }
@@ -228,19 +231,23 @@ gestionar_binario() {
 gestionar_binario
 
 # ------------------------------------------------------------------------------
-# 6. Actualización atómica de manifest.json e index.html
+# 6. Actualización atómica de manifests e index.html
 # ------------------------------------------------------------------------------
 echo -e "${CYAN}${BOLD}Actualizando archivos a la versión $NEW_VERSION...${NC}"
 
-# 6.1 Actualizar manifest.json
-sed -i -E "s/(\"version\":[[:space:]]*\")[^\"]+(\")/\1$NEW_VERSION\2/" "$MANIFEST_FILE"
+# 6.1 Actualizar manifest.json, manifest-esp32s3.json y manifest-esp32.json
+for mf in "$MANIFEST_FILE" "$MANIFEST_S3" "$MANIFEST_ESP32"; do
+    if [[ -f "$mf" ]]; then
+        sed -i -E "s/(\"version\":[[:space:]]*\")[^\"]+(\")/\1$NEW_VERSION\2/" "$mf"
+    fi
+done
 
 # 6.2 Actualizar index.html (en el badge)
-sed -i -E "s/(<span class=\"badge\">ESP32-S3 • v)[^<]+(<\/span>)/\1$NEW_VERSION\2/" "$HTML_FILE"
+sed -i -E "s/(<span class=\"badge\" id=\"version-badge\">.*• v)[^<]+(<\/span>)/\1$NEW_VERSION\2/" "$HTML_FILE"
 
 # Verificar cambios aplicados
 echo -e "${GREEN}Archivos actualizados:${NC}"
-git diff "$MANIFEST_FILE" "$HTML_FILE" || true
+git --no-pager diff "$MANIFEST_FILE" "$MANIFEST_S3" "$MANIFEST_ESP32" "$HTML_FILE" || true
 echo ""
 
 # ------------------------------------------------------------------------------
@@ -256,7 +263,7 @@ echo ""
 
 if ! confirmar_1_0 "¿Deseas aplicar estos cambios, hacer git add, commit y crear el tag?"; then
     echo -e "${YELLOW}Operación cancelada. Revirtiendo modificaciones...${NC}"
-    git checkout "$MANIFEST_FILE" "$HTML_FILE"
+    git checkout "$MANIFEST_FILE" "$MANIFEST_S3" "$MANIFEST_ESP32" "$HTML_FILE" 2>/dev/null || true
     if git ls-files --error-unmatch "$BINARY_LOCAL" >/dev/null 2>&1; then
         git checkout "$BINARY_LOCAL" 2>/dev/null || true
     fi
@@ -265,9 +272,9 @@ if ! confirmar_1_0 "¿Deseas aplicar estos cambios, hacer git add, commit y crea
 fi
 
 # Git Add
-git add "$MANIFEST_FILE" "$HTML_FILE"
-if git status --porcelain | grep -q "merged-binary.bin"; then
-    git add "$BINARY_LOCAL"
+git add "$MANIFEST_FILE" "$MANIFEST_S3" "$MANIFEST_ESP32" "$HTML_FILE"
+if git status --porcelain | grep -qE "merged-binary.*\.bin"; then
+    git add "$SCRIPT_DIR"/merged-binary*.bin
 fi
 if git status --porcelain | grep -qE "(scritp|script)\.sh"; then
     git add "$SCRIPT_DIR/scritp.sh"
