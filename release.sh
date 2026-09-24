@@ -241,21 +241,36 @@ echo ""
 # 6. Detección y copia de binarios compilados
 # ------------------------------------------------------------------------------
 gestionar_binarios() {
-    if [[ -n "$FIRMWARE_DIR" && -d "$FIRMWARE_DIR/build" ]]; then
-        local build_dir="$FIRMWARE_DIR/build"
-        local bin_s3="$build_dir/merged-binary.bin"
-        if [[ -f "$bin_s3" ]]; then
-            echo -e "${CYAN}Se detectó binario ESP32-S3 compilado en:${NC} $bin_s3"
+    if [[ -n "$FIRMWARE_DIR" && -d "$FIRMWARE_DIR" ]]; then
+        local bin_s3=""
+        if [[ -f "$FIRMWARE_DIR/merged-binary-esp32s3.bin" ]]; then
+            bin_s3="$FIRMWARE_DIR/merged-binary-esp32s3.bin"
+        elif [[ -f "$FIRMWARE_DIR/build/merged-binary-esp32s3.bin" ]]; then
+            bin_s3="$FIRMWARE_DIR/build/merged-binary-esp32s3.bin"
+        fi
+
+        if [[ -n "$bin_s3" && -f "$bin_s3" ]]; then
+            echo -e "${CYAN}Se detectó binario ESP32-S3 en:${NC} $bin_s3"
             if confirmar_1_0 "¿Deseas copiar a ./merged-binary-esp32s3.bin?"; then
                 cp -v "$bin_s3" "$SCRIPT_DIR/merged-binary-esp32s3.bin"
                 echo -e "${GREEN}✔ Binario ESP32-S3 actualizado.${NC}\n"
             fi
         fi
-        local bin_esp32="$build_dir/merged-binary-esp32.bin"
-        if [[ -f "$bin_esp32" ]]; then
+
+        local bin_esp32=""
+        if [[ -f "$FIRMWARE_DIR/merged-binary-esp32.bin" ]]; then
+            bin_esp32="$FIRMWARE_DIR/merged-binary-esp32.bin"
+        elif [[ -f "$FIRMWARE_DIR/build/merged-binary-esp32.bin" ]]; then
+            bin_esp32="$FIRMWARE_DIR/build/merged-binary-esp32.bin"
+        elif [[ -f "$FIRMWARE_DIR/merged-binary.bin" ]]; then
+            bin_esp32="$FIRMWARE_DIR/merged-binary.bin"
+        fi
+
+        if [[ -n "$bin_esp32" && -f "$bin_esp32" ]]; then
             echo -e "${CYAN}Se detectó binario ESP32 en:${NC} $bin_esp32"
             if confirmar_1_0 "¿Deseas copiar a ./merged-binary-esp32.bin?"; then
                 cp -v "$bin_esp32" "$SCRIPT_DIR/merged-binary-esp32.bin"
+                cp -v "$bin_esp32" "$SCRIPT_DIR/merged-binary.bin"
                 echo -e "${GREEN}✔ Binario ESP32 actualizado.${NC}\n"
             fi
         fi
