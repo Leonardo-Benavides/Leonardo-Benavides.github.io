@@ -284,6 +284,30 @@ echo ""
 # ------------------------------------------------------------------------------
 # 6. Detección, generación y copia de binarios compilados
 # ------------------------------------------------------------------------------
+ejecutar_idf() {
+    if command -v idf.py >/dev/null 2>&1; then
+        idf.py "$@"
+        return $?
+    fi
+
+    # Los activadores de EIM definen idf.py como función, que no se hereda
+    # al ejecutar este script. Usar las rutas exportadas por el activador.
+    local idf_script="${IDF_PATH:-}/tools/idf.py"
+    local idf_python="${IDF_PYTHON_ENV_PATH:-}/bin/python"
+    if [[ -n "${IDF_PATH:-}" && -f "$idf_script" ]]; then
+        if [[ -n "${IDF_PYTHON_ENV_PATH:-}" && -x "$idf_python" ]]; then
+            "$idf_python" "$idf_script" "$@"
+            return $?
+        elif command -v python >/dev/null 2>&1; then
+            python "$idf_script" "$@"
+            return $?
+        fi
+    fi
+
+    echo -e "${RED}No se encontró idf.py ni un entorno ESP-IDF válido. Activa ESP-IDF con get_idf antes de ejecutar ./release.sh.${NC}" >&2
+    return 127
+}
+
 gestionar_binarios() {
     if [[ -z "$FIRMWARE_DIR" || ! -d "$FIRMWARE_DIR" ]]; then
         echo -e "${YELLOW}⚠️  No se ha especificado un directorio de firmware válido. Se omite la copia de binarios.${NC}\n"
@@ -314,7 +338,7 @@ gestionar_binarios() {
             echo -e "${YELLOW}⚠️  Se detectó compilación en $build_dir pero falta el archivo 'merged-binary.bin' unificado.${NC}"
             if confirmar_1_0 "¿Deseas generarlo automáticamente ahora ejecutando 'idf.py merge-bin'?"; then
                 echo -e "${CYAN}Ejecutando 'idf.py merge-bin' en $FIRMWARE_DIR...${NC}"
-                (cd "$FIRMWARE_DIR" && idf.py merge-bin) || true
+                (cd "$FIRMWARE_DIR" && ejecutar_idf merge-bin) || true
                 if [[ -f "$build_dir/merged-binary.bin" ]]; then
                     bin_source="$build_dir/merged-binary.bin"
                     echo -e "${GREEN}✔ merged-binary.bin generado con éxito.${NC}\n"
