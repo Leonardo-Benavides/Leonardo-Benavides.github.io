@@ -1,6 +1,6 @@
 {
   "name": "modulo_control_ditel_TV_ESP32S3 (ESP32-S3)",
-  "version": "0.1",
+  "version": "0.20",
   "builds": [
     {
       "chipFamily": "ESP32-S3",
