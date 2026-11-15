@@ -205,11 +205,11 @@ fi
 # 7. Opción de auto-eliminación limpia del script
 # ------------------------------------------------------------------------------
 echo ""
-if confirmar_1_0 "¿Deseas eliminar este script 'init_web.sh' para dejar el repositorio limpio?"; then
-    rm -- "$0"
-    echo -e "${GREEN}✔ init_web.sh eliminado.${NC}"
+if confirmar_1_0 "¿Deseas eliminar los scripts de inicialización (init_web.sh / init_web.ps1 / init_web.bat) para dejar el repositorio limpio?"; then
+    rm -f -- "$SCRIPT_DIR/init_web.ps1" "$SCRIPT_DIR/init_web.bat" "$0"
+    echo -e "${GREEN}✔ Scripts de inicialización eliminados.${NC}"
 else
-    echo -e "${YELLOW}init_web.sh conservado.${NC}"
+    echo -e "${YELLOW}Scripts de inicialización conservados.${NC}"
 fi
 
 echo -e "\n${GREEN}${BOLD}¡Inicialización completada exitosamente! 🎉${NC}"

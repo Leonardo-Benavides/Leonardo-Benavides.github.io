@@ -49,8 +49,19 @@ FIRMWARE_DIR=""
 TARGET_BRANCH=""
 
 if [[ -f "$CONFIG_FILE" ]]; then
-    # shellcheck source=/dev/null
-    source "$CONFIG_FILE"
+    # Limpiar posibles retornos de carro (CRLF) de Windows antes de cargar
+    while IFS='=' read -r key val; do
+        key="$(echo "$key" | tr -d '\r' | xargs)"
+        [[ -z "$key" || "$key" =~ ^# ]] && continue
+        val="$(echo "$val" | tr -d '\r' | sed -E 's/^["'\'']|["'\'']$//g')"
+        case "$key" in
+            PROJECT_NAME) PROJECT_NAME="$val" ;;
+            PROJECT_TITLE) PROJECT_TITLE="$val" ;;
+            FIRMWARE_DIR) FIRMWARE_DIR="$val" ;;
+            BRANCH_NAME) BRANCH_NAME="$val" ;;
+            INITIAL_VERSION) INITIAL_VERSION="$val" ;;
+        esac
+    done < "$CONFIG_FILE"
     echo -e "Configuración cargada desde ${CYAN}.web_config${NC}:"
     echo -e "  • Proyecto:     ${GREEN}${PROJECT_NAME:-Desconocido}${NC}"
     echo -e "  • Directorio:   ${CYAN}${FIRMWARE_DIR:-}${NC}"
@@ -128,7 +139,7 @@ if [[ ! -f "$HTML_FILE" ]]; then
     exit 1
 fi
 
-CURRENT_VERSION=$(grep -oP '"version":\s*"\K[^"]+' "$MANIFEST_FILE" || true)
+CURRENT_VERSION=$(sed -nE 's/.*"version"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/p' "$MANIFEST_FILE" | tr -d '\r' | head -n 1 || true)
 
 if [[ -z "$CURRENT_VERSION" ]]; then
     echo -e "${YELLOW}No se pudo extraer la versión actual de manifest.json.${NC}"
@@ -297,7 +308,7 @@ gestionar_binarios() {
     # Detectar chip desde flasher_args.json si está disponible
     if [[ -f "$build_dir/flasher_args.json" ]]; then
         local detected_chip
-        detected_chip=$(grep -oP '"chip"\s*:\s*"\K[^"]+' "$build_dir/flasher_args.json" 2>/dev/null || echo "")
+        detected_chip=$(sed -nE 's/.*"chip"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/p' "$build_dir/flasher_args.json" 2>/dev/null | tr -d '\r' | head -n 1 || echo "")
         [[ -n "$detected_chip" ]] && chip="$detected_chip"
     fi
 
@@ -394,9 +405,9 @@ fi
 # Git Add
 git add "$MANIFEST_FILE" "$HTML_FILE"
 [[ -f "$SCRIPT_DIR/merged-binary-esp32s3.bin" ]] && git add "$SCRIPT_DIR/merged-binary-esp32s3.bin"
-git add "$SCRIPT_DIR/release.sh"
-[[ -f "$SCRIPT_DIR/init_web.sh" ]] && git add "$SCRIPT_DIR/init_web.sh"
-[[ -e "$SCRIPT_DIR/script.sh" || -L "$SCRIPT_DIR/script.sh" ]] && git add "$SCRIPT_DIR/script.sh"
+for extra_f in release.sh release.ps1 release.bat init_web.sh init_web.ps1 init_web.bat script.sh .gitattributes; do
+    [[ -e "$SCRIPT_DIR/$extra_f" || -L "$SCRIPT_DIR/$extra_f" ]] && git add "$SCRIPT_DIR/$extra_f"
+done
 
 # Git Commit
 git commit -m "$COMMIT_MSG"
