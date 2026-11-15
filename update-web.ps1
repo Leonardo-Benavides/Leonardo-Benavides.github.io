@@ -30,18 +30,12 @@ foreach ($part in $config.flash_files.PSObject.Properties) {
 }
 & python @mergeArguments
 if ($LASTEXITCODE -ne 0) { throw 'No se pudo generar el binario unificado.' }
-$projectName = 'Modulo control Ditel TV'
-$manifest = [ordered]@{
-    name = "$projectName (ESP32-S3)"
-    version = $Version
-    builds = @(@{ chipFamily = 'ESP32-S3'; parts = @(@{ path = 'merged-binary-esp32s3.bin'; offset = 0 }) })
-}
+$manifest = Get-Content -Raw -Encoding UTF8 (Join-Path $WebDirectory 'manifest.json') | ConvertFrom-Json
+$manifest.version = $Version
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 $htmlPath = Join-Path $WebDirectory 'index.html'
 $html = [System.IO.File]::ReadAllText($htmlPath)
-$html = [regex]::Replace($html, '(<title id="page-title">)[^<]*(</title>)', "`${1}Instalador Web - $projectName`${2}")
-$html = [regex]::Replace($html, '(<h2 id="project-heading">)[^<]*(</h2>)', "`${1}Flasheo Web: $projectName`${2}")
-$html = [regex]::Replace($html, '(<span class="badge" id="version-badge">)[^<]*(</span>)', "`${1}ESP32-S3 &#8226; v$Version`${2}")
+$html = [regex]::Replace($html, '(<span class="badge" id="version-badge">)[^<]*(</span>)', "`${1}ESP32-S3 $([char]0x2022) v$Version`${2}")
 Copy-Item -LiteralPath (Join-Path $buildDirectory 'merged-binary-esp32s3.bin') -Destination (Join-Path $WebDirectory 'merged-binary-esp32s3.bin')
 [System.IO.File]::WriteAllText((Join-Path $WebDirectory 'manifest.json'), ($manifest | ConvertTo-Json -Depth 8) + "`n", $utf8)
 [System.IO.File]::WriteAllText($htmlPath, $html, $utf8)

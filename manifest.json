@@ -1,15 +1,15 @@
 {
-    "name":  "Modulo control Ditel TV (ESP32-S3)",
-    "version":  "0.18",
-    "builds":  [
-                   {
-                       "chipFamily":  "ESP32-S3",
-                       "parts":  [
-                                     {
-                                         "offset":  0,
-                                         "path":  "merged-binary-esp32s3.bin"
-                                     }
-                                 ]
-                   }
-               ]
+  "name": "9io7adc_uart (ESP32-S3)",
+  "version": "0.19",
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        {
+          "offset": 0,
+          "path": "merged-binary-esp32s3.bin"
+        }
+      ]
+    }
+  ]
 }
