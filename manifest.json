@@ -1,6 +1,6 @@
 {
   "name": "bh1415_controller_uart (ESP32-S3)",
-  "version": "0.2",
+  "version": "1",
   "builds": [
     {
       "chipFamily": "ESP32-S3",
