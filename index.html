@@ -17,22 +17,30 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      min-height: 90vh;
+      min-height: 100vh;
       margin: 0;
       background-color: #0f172a;
       color: #f8fafc;
-      padding: 1.5rem;
+      padding: 1.75rem 1.25rem;
+      gap: 1.5rem;
+    }
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
     }
     .card {
       background: #1e293b;
-      padding: 2.5rem 2rem;
+      padding: 2rem;
       border-radius: 16px;
       box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.45);
-      text-align: center;
-      max-width: 480px;
-      width: 100%;
       border: 1px solid #334155;
+      width: 100%;
+    }
+    .installer-card {
+      text-align: center;
     }
     .badge {
       display: inline-block;
@@ -50,20 +58,21 @@
       margin-top: 0;
       margin-bottom: 0.5rem;
       color: #38bdf8;
-      font-size: 1.6rem;
+      font-size: 1.55rem;
     }
     .subtitle {
       color: #94a3b8;
       font-size: 0.95rem;
       margin-top: 0;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.4rem;
     }
     .description-box {
       font-size: 0.92rem;
       color: #94a3b8;
       line-height: 1.6;
-      margin-bottom: 1.8rem;
-      padding: 0.8rem 1rem;
+      margin: 0 auto 1.6rem auto;
+      max-width: 600px;
+      padding: 0.85rem 1.1rem;
       background: #0f172a;
       border: 1px solid #334155;
       border-radius: 10px;
@@ -73,7 +82,7 @@
     }
     esp-web-install-button {
       display: inline-block;
-      margin-top: 0.5rem;
+      margin-top: 0.25rem;
     }
     .install-action-btn {
       background: #0284c7;
@@ -101,31 +110,489 @@
       margin-top: 0.8rem;
     }
     .footer-note {
-      margin-top: 1.8rem;
-      font-size: 0.75rem;
+      margin-top: 1.4rem;
+      font-size: 0.78rem;
       color: #64748b;
+    }
+
+    /* Monitor Serial Web */
+    .monitor-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+    .monitor-title {
+      margin: 0;
+      font-size: 1.2rem;
+      color: #38bdf8;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #94a3b8;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #64748b;
+    }
+    .status-pill.flashing {
+      color: #fbbf24;
+      border-color: rgba(251, 191, 36, 0.4);
+      background: rgba(251, 191, 36, 0.08);
+    }
+    .status-pill.flashing .status-dot {
+      background: #fbbf24;
+    }
+    .status-pill.target {
+      color: #34d399;
+      border-color: rgba(52, 211, 153, 0.45);
+      background: rgba(52, 211, 153, 0.1);
+    }
+    .status-pill.target .status-dot {
+      background: #34d399;
+    }
+
+    .monitor-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.85rem;
+    }
+    .btn {
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 0.55rem 1rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+    }
+    .btn:hover:not(:disabled) {
+      background: #334155;
+    }
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: #0284c7;
+      border-color: #0284c7;
+      color: #ffffff;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: #0369a1;
+      border-color: #0369a1;
+    }
+    .btn-danger {
+      background: #dc2626;
+      border-color: #dc2626;
+      color: #ffffff;
+    }
+    .btn-danger:hover:not(:disabled) {
+      background: #b91c1c;
+      border-color: #b91c1c;
+    }
+    .btn-warn {
+      background: #d97706;
+      border-color: #d97706;
+      color: #ffffff;
+    }
+    .btn-warn:hover:not(:disabled) {
+      background: #b45309;
+      border-color: #b45309;
+    }
+
+    .port-note {
+      font-size: 0.83rem;
+      color: #94a3b8;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 0.65rem 0.9rem;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+    .port-note.error {
+      color: #fca5a5;
+      border-color: rgba(248, 113, 113, 0.45);
+      background: rgba(127, 29, 29, 0.25);
+    }
+
+    .pane-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .pane-box {
+      border: 1px solid #334155;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #0b1120;
+    }
+    .pane-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.85rem;
+      background: #0f172a;
+      border-bottom: 1px solid #334155;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      color: #cbd5e1;
+    }
+    .pane-label small {
+      font-weight: 500;
+      text-transform: none;
+      color: #64748b;
+    }
+    .terminal-output {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      padding: 0.75rem 0.9rem;
+      height: 220px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #cbd5e1;
+    }
+    .terminal-output.target-output {
+      height: 260px;
+    }
+    .log-line {
+      min-height: 1.2em;
+    }
+    .log-error {
+      color: #f87171;
+    }
+    .log-warn {
+      color: #fbbf24;
+    }
+    .log-info {
+      color: #34d399;
+    }
+    .log-plain {
+      color: #cbd5e1;
+    }
+
+    .phase-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.55rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      border: 1px dashed #475569;
+      background: #0f172a;
+      color: #94a3b8;
+      transition: all 0.2s ease;
+    }
+    .phase-divider.active {
+      border-style: solid;
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.14);
+      color: #34d399;
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        padding: 1.35rem 1rem;
+      }
+      .terminal-output {
+        height: 190px;
+      }
+      .terminal-output.target-output {
+        height: 220px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <span class="badge" id="version-badge">ESP32-S3 • v0.1</span>
-    <h2 id="project-heading">Flasheo Web: Firmware ESP32-S3</h2>
-    <p class="subtitle" id="project-subtitle">Instalación oficial vía Web Serial para ESP32-S3</p>
+  <div class="container">
+    <div class="card installer-card">
+      <span class="badge" id="version-badge">ESP32-S3 • v0.1</span>
+      <h2 id="project-heading">Flasheo Web: Firmware ESP32-S3</h2>
+      <p class="subtitle" id="project-subtitle">Instalación oficial vía Web Serial para ESP32-S3</p>
 
-    <div class="description-box" id="desc-box">
-      Conecta tu placa <strong>ESP32-S3</strong> por puerto USB en Chrome o Edge y presiona el botón para flashear el firmware oficial.
+      <div class="description-box" id="desc-box">
+        Conecta tu placa <strong>ESP32-S3</strong> por puerto USB en Chrome o Edge y presiona el botón para flashear el firmware oficial.
+      </div>
+      
+      <!-- Botón de ESP Web Tools -->
+      <esp-web-install-button id="installer-btn" manifest="manifest.json">
+        <button slot="activate" class="install-action-btn">Conectar y Flashear ESP32-S3</button>
+        <span slot="unsupported" class="unsupported-msg">⚠️ Navegador no compatible. Abre esta página en Google Chrome o Microsoft Edge.</span>
+      </esp-web-install-button>
+
+      <div class="footer-note">
+        Compatible con navegadores basados en Chromium mediante Web Serial API
+      </div>
     </div>
-    
-    <!-- Botón de ESP Web Tools -->
-    <esp-web-install-button id="installer-btn" manifest="manifest.json">
-      <button slot="activate" class="install-action-btn">Conectar y Flashear ESP32-S3</button>
-      <span slot="unsupported" class="unsupported-msg">⚠️ Navegador no compatible. Abre esta página en Google Chrome o Microsoft Edge.</span>
-    </esp-web-install-button>
 
-    <div class="footer-note">
-      Compatible con navegadores basados en Chromium mediante Web Serial API
+    <div class="card">
+      <div class="monitor-header">
+        <h3 class="monitor-title">Monitor Serial — Flasheo y ESP32 Destino</h3>
+        <span class="status-pill" id="serial-status">
+          <span class="status-dot"></span>
+          <span id="serial-status-text">Desconectado</span>
+        </span>
+      </div>
+
+      <div class="monitor-controls">
+        <button type="button" class="btn btn-primary" id="btn-connect">Conectar Terminal</button>
+        <button type="button" class="btn btn-warn" id="btn-reset" disabled>Reiniciar Flasher</button>
+        <button type="button" class="btn" id="btn-clear">Limpiar</button>
+      </div>
+
+      <div class="port-note" id="port-note">
+        El navegador solo permite abrir el puerto USB en una herramienta a la vez: primero flashea con el botón azul de arriba, cierra su ventana emergente y luego haz clic en <strong>Conectar Terminal</strong> (o usa <strong>Reiniciar Flasher</strong> para ver todo el flasheo UART y el arranque del ESP32 destino desde cero).
+      </div>
+
+      <div class="pane-wrapper">
+        <div class="pane-box">
+          <div class="pane-label">
+            <span>Panel 1 — Flasheo UART (Host Flasher)</span>
+            <small>115200 baud</small>
+          </div>
+          <div class="terminal-output" id="panel-flash"></div>
+        </div>
+
+        <div class="phase-divider" id="phase-divider">
+          Esperando fin de flasheo...
+        </div>
+
+        <div class="pane-box">
+          <div class="pane-label">
+            <span>Panel 2 — Consola del ESP32 Flasheado (Destino)</span>
+            <small>115200 baud</small>
+          </div>
+          <div class="terminal-output target-output" id="panel-target"></div>
+        </div>
+      </div>
     </div>
   </div>
+
+  <script>
+    (function () {
+      const MAX_LINES = 1500;
+      const TARGET_MARKER = '>>> INICIO DEL ESP32 FLASHEADO';
+      const ANSI_REGEX = /\x1b\[[0-9;]*[a-zA-Z]/g;
+
+      const btnConnect = document.getElementById('btn-connect');
+      const btnReset = document.getElementById('btn-reset');
+      const btnClear = document.getElementById('btn-clear');
+      const statusPill = document.getElementById('serial-status');
+      const statusText = document.getElementById('serial-status-text');
+      const portNote = document.getElementById('port-note');
+      const panelFlash = document.getElementById('panel-flash');
+      const panelTarget = document.getElementById('panel-target');
+      const phaseDivider = document.getElementById('phase-divider');
+
+      let port = null;
+      let reader = null;
+      let keepReading = false;
+      let isConnected = false;
+      let phase = 'flashing'; // 'flashing' | 'target'
+      let lineBuffer = '';
+
+      function setStatus(mode, text) {
+        statusPill.className = 'status-pill' + (mode ? ' ' + mode : '');
+        statusText.textContent = text;
+      }
+
+      function setPhase(nextPhase) {
+        phase = nextPhase;
+        if (nextPhase === 'target') {
+          phaseDivider.className = 'phase-divider active';
+          phaseDivider.textContent = 'Flasheo completado — Inicio del ESP32 Flasheado';
+          if (isConnected) {
+            setStatus('target', 'Conectado — ESP32 Destino en ejecución');
+          }
+        } else {
+          phaseDivider.className = 'phase-divider';
+          phaseDivider.textContent = 'Esperando fin de flasheo...';
+          if (isConnected) {
+            setStatus('flashing', 'Conectado — Flasheando');
+          }
+        }
+      }
+
+      function classifyLine(line) {
+        if (/^E \(|\bE \(/.test(line)) return 'log-error';
+        if (/^W \(|\bW \(/.test(line)) return 'log-warn';
+        if (/^I \(|\bI \(/.test(line)) return 'log-info';
+        return 'log-plain';
+      }
+
+      function appendLine(panel, text) {
+        while (panel.childElementCount >= MAX_LINES) {
+          panel.removeChild(panel.firstChild);
+        }
+        const div = document.createElement('div');
+        div.className = 'log-line ' + classifyLine(text);
+        div.textContent = text;
+        panel.appendChild(div);
+        panel.scrollTop = panel.scrollHeight;
+      }
+
+      function clearTerminals() {
+        panelFlash.textContent = '';
+        panelTarget.textContent = '';
+        lineBuffer = '';
+        setPhase('flashing');
+      }
+
+      function processChunk(text) {
+        lineBuffer += text;
+        const lines = lineBuffer.split('\n');
+        lineBuffer = lines.pop();
+
+        for (let i = 0; i < lines.length; i++) {
+          const clean = lines[i].replace(/\r/g, '').replace(ANSI_REGEX, '');
+          if (clean.includes(TARGET_MARKER)) {
+            setPhase('target');
+            continue;
+          }
+          if (phase === 'target') {
+            appendLine(panelTarget, clean);
+          } else {
+            appendLine(panelFlash, clean);
+          }
+        }
+      }
+
+      function updateButtons(connected) {
+        isConnected = connected;
+        btnConnect.textContent = connected ? 'Desconectar' : 'Conectar Terminal';
+        btnConnect.className = connected ? 'btn btn-danger' : 'btn btn-primary';
+        btnReset.disabled = !connected;
+        if (!connected) {
+          setStatus('', 'Desconectado');
+        } else {
+          setStatus(phase === 'target' ? 'target' : 'flashing',
+            phase === 'target'
+              ? 'Conectado — ESP32 Destino en ejecución'
+              : 'Conectado — Flasheando');
+        }
+      }
+
+      async function readLoop() {
+        const decoder = new TextDecoder('utf-8');
+        try {
+          while (keepReading && port && port.readable) {
+            reader = port.readable.getReader();
+            try {
+              while (keepReading) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                if (value) {
+                  processChunk(decoder.decode(value, { stream: true }));
+                }
+              }
+            } finally {
+              reader.releaseLock();
+              reader = null;
+            }
+          }
+        } catch (err) {
+          if (keepReading) {
+            appendLine(phase === 'target' ? panelTarget : panelFlash,
+              '[Error serial: ' + (err && err.message ? err.message : String(err)) + ']');
+          }
+        }
+      }
+
+      async function disconnectSerial() {
+        keepReading = false;
+        try {
+          if (reader) {
+            await reader.cancel();
+          }
+        } catch (_) {}
+        try {
+          if (port) {
+            await port.close();
+          }
+        } catch (_) {}
+        port = null;
+        reader = null;
+        updateButtons(false);
+      }
+
+      async function connectSerial() {
+        if (!('serial' in navigator)) return;
+
+        try {
+          port = await navigator.serial.requestPort();
+          await port.open({ baudRate: 115200 });
+          lineBuffer = '';
+          keepReading = true;
+          updateButtons(true);
+          await readLoop();
+        } catch (err) {
+          if (err && err.name !== 'NotFoundError') {
+            appendLine(panelFlash, '[No se pudo abrir el puerto: ' + err.message + ']');
+          }
+        } finally {
+          await disconnectSerial();
+        }
+      }
+
+      async function resetFlasher() {
+        if (!port || !isConnected) return;
+        clearTerminals();
+        try {
+          await port.setSignals({ dataTerminalReady: false, requestToSend: true });
+          await new Promise(function (resolve) { setTimeout(resolve, 120); });
+          await port.setSignals({ dataTerminalReady: false, requestToSend: false });
+        } catch (err) {
+          appendLine(panelFlash, '[Error al reiniciar flasher: ' + (err && err.message ? err.message : String(err)) + ']');
+        }
+      }
+
+      if (!('serial' in navigator)) {
+        btnConnect.disabled = true;
+        portNote.className = 'port-note error';
+        portNote.textContent = '⚠️ Web Serial API no está disponible en este navegador. Usa Google Chrome o Microsoft Edge en escritorio.';
+      } else {
+        navigator.serial.addEventListener('disconnect', function (event) {
+          if (port && event.target === port) {
+            disconnectSerial();
+          }
+        });
+      }
+
+      btnConnect.addEventListener('click', function () {
+        if (isConnected) {
+          disconnectSerial();
+        } else {
+          connectSerial();
+        }
+      });
+
+      btnReset.addEventListener('click', resetFlasher);
+      btnClear.addEventListener('click', clearTerminals);
+    })();
+  </script>
 </body>
 </html>
